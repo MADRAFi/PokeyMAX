@@ -208,12 +208,15 @@ begin
     val:= (f^ SHR $18) and $ff; 
 
     // PSG
-
     case (val and $3) of
         0: pmax_config.psg_freq:=1;
         1: pmax_config.psg_freq:=2;
         2: pmax_config.psg_freq:=3;
     end;
+
+    if (val and $10) = $10 then pmax_config.psg_envelope:=1
+    else pmax_config.psg_envelope:=2;
+
 
     ///////////////////////////////////////////////////////////////////////////
     val:= (((f^ SHR $18) and $ff) and $c) SHR 2; 
@@ -224,10 +227,6 @@ begin
         2: pmax_config.psg_stereo:=3;
         3: pmax_config.psg_stereo:=4;
     end;
-
-    if (val and $10) = $10 then pmax_config.psg_envelope:=1
-    else pmax_config.psg_envelope:=2;
-
 
     ///////////////////////////////////////////////////////////////////////////
     
