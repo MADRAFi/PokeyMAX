@@ -2,23 +2,20 @@ unit pm_detect;
 (*
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
-* @name: PokeyMAX library.
+* @name: PokeyMAX library pm_detect.
 * @version: 0.0.1
-
+*
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
-*
+* Usefull to detect presence of PokeyMAX and loaded CORE options.
 *)
 
 interface
 
 var 
-    [volatile] pokey: array [0..0] of byte absolute $d200;
-    [volatile] config: array [0..0] of byte absolute $d210;
+    pokey: array [0..0] of byte absolute $d200;
+    config: array [0..0] of byte absolute $d210;
     [volatile] core: byte absolute $d214;
-
-    // [volatile] pokey: byte absolute $d200;
-    // [volatile] config: byte absolute $d210;
 
 const 
     CORE_MONO = 1;
@@ -190,16 +187,16 @@ end;
 function PMAX_GetCoreVersion: String;
 var
    i: Byte;
-   s: String;
+//    s: String;
 
 begin
-    s[0]:=chr(8);
+    result[0]:=chr(8);
     for i := 0 to 7 do
     begin
         core:= i;
-        s[1 + i]:= chr(core);
+        result[1 + i]:= chr(core);
     end;
-    result:= s;
+    // result:= s;
 end;
 
 procedure PMAX_EnableConfig (enabled: Boolean);
