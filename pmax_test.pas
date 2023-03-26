@@ -4,7 +4,7 @@ uses crt, pm_detect;
 
 var
     present: Boolean = false;
-    // s_pokey: String = '';
+    s_pokey: String = '';
 
 function convert_bool(value: Boolean): String;
 begin
@@ -17,15 +17,15 @@ begin
     if present then
         begin
             PMAX_EnableConfig(true);
-            // case PMAX_GetPokey of
-            //     1: s_pokey:='Mono';
-            //     2: s_pokey:='Stereo';
-            //     4: s_pokey:='Quad';
-            // end;
+            case PMAX_GetPokeys of
+                1: s_pokey:='Mono';
+                2: s_pokey:='Stereo';
+                4: s_pokey:='Quad';
+            end;
 
             writeln('Core: ', PMAX_GetCoreVersion); 
-            writeln('Pokeys: ', PMAX_GetPokey);
-            // writeln('Pokeys: ', s_pokey);
+            // writeln('Pokeys: ', PMAX_GetPokeys);
+            writeln('Pokeys: ', s_pokey);
             writeln('SID: ', convert_bool(PMAX_isSIDPresent));
             writeln('PSG: ', convert_bool(PMAX_isPSGPresent));
             writeln('Covox: ', convert_bool(PMAX_isCovoxPresent));

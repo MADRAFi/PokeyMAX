@@ -3,7 +3,7 @@ unit pm_detect;
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
 * @name: PokeyMAX library pm_detect.
-* @version: 0.0.1
+* @version: 0.0.2
 *
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
@@ -12,39 +12,28 @@ unit pm_detect;
 
 interface
 
-var 
-    pokey: array [0..0] of byte absolute $d200;
-    config: array [0..0] of byte absolute $d210;
-    [volatile] core: byte absolute $d214;
-
 const 
-    CORE_MONO = 1;
-    CORE_DIVIDE = 2;
-    CORE_GTIA = 3;
-    CORE_RESTRICT = 4;
-    CORE_OUTPUT = 5;
-    CORE_PHI = 6;
-    CORE_MAX = 6;
+    POKEY_ADDRESS = $d200;
+    CONFIG_ADDRESS = $d210;
 
-    POKEY_LINEAR = 1;
-    POKEY_CHANNEL_MODE = 2;
-    POKEY_IRQ = 3;
-    POKEY_MAX = 3;
+    // Address references
+    CONFIG_WRITE = $c;
+    CONFIG_PRESENCE = $1;
+    CONFIG_VERSION = $4;
 
-    PSG_FREQUENCY = 1;
-    PSG_STEREO = 2;
-    PSG_ENVELOPE = 3;
-    PSG_VOLUME = 4; 
-    PSG_MAX = 4;
+    // Masks
+    CONFIG_PRESENT_FLASH = $40;
+    CONFIG_PRESENT_SAMPLE = $20;
+    CONFIG_PRESENT_COVOX = $10;
+    CONFIG_PRESENT_PSG = $8;
+    CONFIG_PRESENT_SID = $4;
+    CONFIG_PRESENT_POKEY = $3;                      
+    
 
-    SID_TYPE = 1;
-    SID_MAX = 1;
-
-
-// my custom labels
-    POKEY_DETECT = 12;
-    CONFIG_TYPE = 1;
-    CONFIG_VERSION = 4;
+var 
+    [volatile] pokey: array [0..0] of byte absolute POKEY_ADDRESS;
+    [volatile] config: array [0..0] of byte absolute CONFIG_ADDRESS;               // configuration
+    [volatile] core_version: Byte absolute CONFIG_ADDRESS + CONFIG_VERSION;        // core version string
 
 function PMAX_Detect: Boolean;
 (*
@@ -88,7 +77,7 @@ function PMAX_isSamplePresent: Boolean;
 * It returns true when Sample core is present.
 *)
 
-function PMAX_GetPokey: Byte;
+function PMAX_GetPokeys: Byte;
 (*
 * @description:
 * Checks how many PokeyMAX Pokeys are present in the firmware. 
@@ -116,93 +105,77 @@ implementation
 
 function PMAX_Detect: Boolean;
 begin
-    if pokey[POKEY_DETECT] <> 1 then
-    // if pokey + POKEY_DETECT <> 1 then
-        result:= false
-    else result:= true;
+    if pokey[CONFIG_WRITE] = 1 then
+        result:= true
+    else result:= false;
 end;
 
 function PMAX_isFlashPresent: Boolean;
 begin
-    if (config[CONFIG_TYPE] and $40) = $40 then
-    // if (config + CONFIG_TYPE and $40) = $40 then
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_FLASH = CONFIG_PRESENT_FLASH then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isSIDPresent: Boolean;
 begin
-
-    if (config[CONFIG_TYPE] and $4) = $4 then
-    // if (config + CONFIG_TYPE and $4) = $4 then
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_SID = CONFIG_PRESENT_SID then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isPSGPresent: Boolean;
 begin
-
-    if (config[CONFIG_TYPE] and $8) = $8 then
-    // if (config + CONFIG_TYPE and $8) = $8 then
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_PSG = CONFIG_PRESENT_PSG then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isCovoxPresent: Boolean;
 begin
-
-    if (config[CONFIG_TYPE] and $10) = $10 then
-    // if (config + CONFIG_TYPE and $10) = $10 then
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_COVOX = CONFIG_PRESENT_COVOX then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isSamplePresent: Boolean;
 begin
-
-    if (config[CONFIG_TYPE] and $20) = $20 then
-    // if (config + CONFIG_TYPE and $20) = $20 then
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_SAMPLE = CONFIG_PRESENT_SAMPLE then
         result:= true
     else result:= false;
 end;
 
-function PMAX_GetPokey: Byte;
+function PMAX_GetPokeys: Byte;
 begin
-    case (config[CONFIG_TYPE] and $3) of
-        0: result:= 1;
-        1: result:= 2;
-        2: result:= 4;
-        3: result:= 4;
-    // if (config + CONFIG_TYPE and $3) = 0 then
-    //     result:= 1
-    // else if (config + CONFIG_TYPE and $3) = 1 then
-    //     result:= 2
-    // else if (config + CONFIG_TYPE and $3) = 2 then
-    //     result:= 4
-    // else if (config + CONFIG_TYPE and $3) = 3 then
-    //     result:= 4;
-    end;
+    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 3 then
+        Result:= 4
+    else if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 2 then
+        Result:= 4
+    else if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 1 then
+        Result:= 2
+    else Result:=1;
 end;
 
 function PMAX_GetCoreVersion: String;
 var
-   i: Byte;
-//    s: String;
+    i: Byte;
 
 begin
-    result[0]:=chr(8);
+    result[0]:=#8;
     for i := 0 to 7 do
     begin
-        core:= i;
-        result[1 + i]:= chr(core);
+        // config[CONFIG_VERSION]:= i;
+        // result[1 + i]:= chr(config[CONFIG_VERSION]);
+        core_version:= i;
+        result[1 + i]:= chr(core_version);
+        
     end;
-    // result:= s;
 end;
 
 procedure PMAX_EnableConfig (enabled: Boolean);
 begin
-    if enabled then pokey[POKEY_DETECT] := $3f
-    else pokey[POKEY_DETECT] := 0;
+    if enabled then pokey[CONFIG_WRITE]:= $3f
+    else pokey[CONFIG_WRITE]:= 0;
  
 end;
 
