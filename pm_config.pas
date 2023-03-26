@@ -44,14 +44,12 @@ type
         psg_envelope: Byte;     // 1 = 16               2 = 32
         psg_volume: Byte;       // 1 = Linear           2 = Log 0           3 = Log 1               4 = Log 2
         sid_1: Byte;            // 1 = 8580             2 = 6581            3 = 8580 Digi
-        sid_2: byte;            // 1 = 8580             2 = 6581            3 = 8580 Digi
+        sid_2: Byte;            // 1 = 8580             2 = 6581            3 = 8580 Digi
     end;
 
 var 
-    // pokey: array [0..0] of byte absolute $d200;
-    // config: array [0..0] of byte absolute $d210;
-    flash1, flash2: LongWord;
     pmax_config: TPMAX_CONFIG;
+    flash1, flash2: LongWord;
 
 // const 
 
@@ -62,50 +60,30 @@ var
 * It returns true when PokeyMAX is present.
 *)
 
-
-// function PMAX_GetPokey: Byte;
+procedure PMAX_FlashInit;
 (*
 * @description:
-* Checks how many PokeyMAX Pokeys are present in the firmware. 
-* It returns number of pokeys present.
+* Reads Pokey registry and sets flash variable.
 *)
 
 procedure PMAX_ReadConfig;
 (*
 * @description:
-* Switches PokeyMAX config mode.
-* Enabled means config area is selected.
-* Disabled means config area is deselected.
+* Reads PokeyMAX config settings and saves data in pmax_config record.
+*)
+
+procedure PMAX_UpdateConfig;
+(*
+* @description:
+* Reads pmax_config record and updates PokeyMAX config settings.
 *)
 
 
 implementation
 
-// function PMAX_Detect: Boolean;
-// begin
-//     if pokey[POKEY_CONFIG] <> 1 then
-//         result:= false
-//     else result:= true;
-// end;
 
-
-// function PMAX_GetPokey: Byte;
-// begin
-//     case (config[1] and $3) of
-//         0: result:= 1;
-//         1: result:= 2;
-//         2: result:= 4;
-//         3: result:= 4;
-//     end;
-// end;
-
-procedure PMAX_ReadConfig;
-var
-    val: Byte;
-    f : PLongWord;
-
+procedure PMAX_FlashInit;
 begin
-    
     flash1 := (LONGINT(config[5]) SHL 24) OR
               (LONGINT(config[3]) SHL 16) OR
               (LONGINT(config[2]) SHL 8) OR
@@ -114,13 +92,19 @@ begin
     flash2 := (LONGINT(config[9]) SHL 24) OR
               (LONGINT(config[7]) SHL 8) OR
               LONGINT(config[6]);
+end;
 
-    // f:=Pointer(flash1);
-    f:=@flash1;
+procedure PMAX_ReadConfig;
+var
+    val: Byte;
+    f : PLongWord;
 
+begin
+    PMAX_FlashInit;
 
     ///////////////////////////////////////////////////////////////////////////
-
+    
+    f:=@flash1;
     val:= (f^ SHR $8) and $ff;
     
     // Divide
@@ -298,6 +282,196 @@ begin
 
     if (val and $10) = $10 then pmax_config.mode_covox:= true
     else pmax_config.mode_covox:= false;
+end;
+
+
+procedure PMAX_UpdateConfig;
+var
+    val: Byte;
+    f : PLongWord;
+
+begin
+    PMAX_FlashInit;
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    f:=@flash1;
+    val:= (f^ SHR $8) and $ff;
+    
+    // Divide
+    case pmax_config.core_div1 of
+        1: (val and $3):=0;
+        2: (val and $3):=1;
+        3: (val and $3):=2;
+        4: (val and $3):=3;
+    end;
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= ((f^ SHR $8) and $ff) SHR 2;
+
+    case pmax_config.core_div2 of
+        1: (val and $3):=0;
+        2: (val and $3):=1;
+        3: (val and $3):=2;
+        4: (val and $3):=3;
+    end;
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= ((f^ SHR $8) and $ff) SHR 4;
+
+    case pmax_config.core_div3 of
+        1: (val and $3):=0;
+        2: (val and $3):=1;
+        3: (val and $3):=2;
+        4: (val and $3):=3;
+    end;
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= ((f^ SHR $8) and $ff) SHR 6;
+
+    case pmax_config.core_div4 of
+        1: (val and $3):=0;
+        2: (val and $3):=1;
+        3: (val and $3):=2;
+        4: (val and $3):=3;
+    end;
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= (f^ SHR $10) and $ff; 
+    
+    // GTIA
+    if (pmax_config.core_gtia1 = true) then (val and $1):= $1 
+    else (val and $1):= 0;
+
+    if (pmax_config.core_gtia2 = true) then ((val SHR 1) and $1) := $1 
+    else ((val SHR 1) and $1):= 0;
+
+    if (pmax_config.core_gtia3 = true) then ((val SHR 2) and $1) := $1 
+    else ((val SHR 2) and $1):= 0;
+
+    if (pmax_config.core_gtia4 = true) then ((val SHR 3) and $1) := $1 
+    else ((val SHR 3) and $1):= 0;
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    val:= f^ and $ff;
+
+    // CORE 1
+    
+    if (pmax_config.core_mono = 1) then (val and $10) := $10 
+    else (val and $10) := 0;
+    
+    if (pmax_config.core_phi = 1) then (val and $20) := $20 
+    else (val and $20) := 0;
+
+    // Pokey
+
+    if (pmax_config.pokey_mixing = 1) then (val and $1) := $1 
+    else (val and $1) := 0
+
+    if (pmax_config.pokey_channel = 4) then (val and $4) := $4 
+    else (val and $4) := 0
+    
+    if (pmax_config.pokey_irq = 8) then (val and $8) := $8
+    else (val and $8) := 0
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= (f^ SHR $18) and $ff;
+
+    // PSG
+    case pmax_config.psg_freq of
+        1: (val and $3):=0;
+        2: (val and $3):=1;
+        3: (val and $3):=2;
+    end;
+
+    if pmax_config.psg_envelope = 1 then (val and $10) := $10 
+    else (val and $10) := 0;
+
+    ///////////////////////////////////////////////////////////////////////////
+    val:= (((f^ SHR $18) and $ff) and $c) SHR 2; 
+
+    case pmax_config.psg_stereo of
+        1: val:=0;
+        2: val:=1;
+        3: val:=2;
+        4: val:=3;
+    end;
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= (((f^ SHR $18) and $ff) and $60) SHR $5; 
+
+    case pmax_config.psg_volume of
+        1: val:= $3;
+        2: (val and $3):= 0;
+        3: (val and $3):= 1
+        4: (val and $3):= 2
+    end;
+
+    ///////////////////////////////////////////////////////////////////////////
+
+    f:=@flash2;
+    val:= f^;
+
+    // SID 1
+    case pmax_config.sid_1 of
+        1: (val and $3):= 0;
+        2: (val and $3):= 1;
+        3: (val and $3):= 2;
+    end;
+
+    // SID 2
+    case pmax_config.sid_2 of
+        1: (val and $30):= 0;
+        2: (val and $30):= 16;
+        3: (val and $30):= 32;
+    end;
+
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= (f^ SHR $18) and $1f; 
+    
+    
+    // Output
+    if (pmax_config.core_out1 = true) then (val and $1) := $1 
+    else (val and $1) := 0;
+
+    if (pmax_config.core_out2 = true) then ((val SHR 1) and $1) := $1 
+    else ((val SHR 1) and $1) := 0;
+    
+    if (pmax_config.core_out3 = true) then ((val SHR 2) and $1) := $1 
+    else ((val SHR 2) and $1) := 0;
+    
+    if (pmax_config.core_out4 = true) then ((val SHR 3) and $1) := $1 
+    else ((val SHR 3) and $1) := 0;
+
+    if (pmax_config.core_out5 = true) then ((val SHR 4) and $1) := $1 
+    else ((val SHR 4) and $1) := 0;
+
+    ///////////////////////////////////////////////////////////////////////////
+    
+    val:= (f^ SHR $8) and $1f;
+
+    case pmax_config.mode_option of
+        1: (val and $2) := $2;
+        2: (val and $1) := $1;
+        3: val:=0; 
+    end;
+
+    if (pmax_config.mode_sid = true) then (val and $4) := $4
+    else (val and $4) := $0;
+    
+    if (pmax_config.mode_psg = true) then (val and $8) := $8
+    else (val and $8) := $0;
+
+    if (pmax_config.mode_covox = true) then (val and $10) := $10
+    else (val and $10) := $0;
+
 end;
 
 end. 
