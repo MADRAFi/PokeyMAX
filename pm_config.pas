@@ -3,7 +3,7 @@ unit pm_config;
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
 * @name: PokeyMAX config library.
-* @version: 0.0.1
+* @version: 0.1.0
 
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
@@ -31,6 +31,21 @@ const
     CONFIG_MODE_MONO = $10;
     CONFIG_MODE_PHI = $20;                 // old name PAL
 
+    CONFIG_DIV_CH0 = $3;
+    CONFIG_DIV_CH1 = $c;
+    CONFIG_DIV_CH2 = $30;
+    CONFIG_DIV_CH3 = $C0;
+
+    CONFIG_GTIA_CH0 = $1;
+    CONFIG_GTIA_CH1 = $2;
+    CONFIG_GTIA_CH2 = $4;
+    CONFIG_GTIA_CH3 = $8;
+
+    CONFIG_RESTRICT_POKEY = $3;
+    CONFIG_RESTRICT_SID = $4;
+    CONFIG_RESTRICT_PSG = $8;
+    CONFIG_RESTRICT_COVOX = $16; 
+
     CONFIG_PSGMODE_FREQ = $3;
     CONFIG_PSGMODE_STEREO = $c;
     CONFIG_PSGMODE_ENVELOPE = $10;
@@ -46,7 +61,7 @@ const
 type
     // Window handle info
     TPMAX_CONFIG = record
-        mode_option: Byte;      // 1 = Quad             2 = Stereo          3 = Mono
+        mode_pokey: Byte;       // 1 = Mono             2 = Stereo          3 = Quad
         mode_sid: Boolean;      // 0 = Disabled         1 = Enabled                                                 SID
         mode_psg: Boolean;      // 0 = Disabled         1 = Enabled                                                 PSG
         mode_covox: Boolean;    // 0 = Disabled         1 = Enabled                                                 Covox
@@ -100,11 +115,6 @@ procedure PMAX_ReadConfig;
 *)
 
 
-
-
-// function PMAX_GetCORE_GTIA: Byte;
-// procedure PMAX_SetCORE_GTIA(newval: Byte);
-
 function PMAX_GetMODE_PHI: Byte;
 procedure PMAX_SetMODE_PHI(newval: Byte);
 
@@ -119,6 +129,42 @@ procedure PMAX_SetMODE_Mono(newval: Byte);
 
 function PMAX_GetMODE_Mixing: Byte;
 procedure PMAX_SetMODE_Mixing(newval: Byte);
+
+function PMAX_GetREST_Pokey: Byte;
+procedure PMAX_SetREST_Pokey(newval: Byte);
+
+function PMAX_GetREST_Sid: Boolean;
+procedure PMAX_SetREST_Sid(newval: Boolean);
+
+function PMAX_GetREST_Psg: Boolean;
+procedure PMAX_SetREST_Psg(newval: Boolean);
+
+function PMAX_GetREST_Covox: Boolean;
+procedure PMAX_SetREST_Covox(newval: Boolean);
+
+function PMAX_GetDIV_Ch0: Byte;
+procedure PMAX_SetDIV_Ch0(newval: Byte);
+
+function PMAX_GetDIV_Ch1: Byte;
+procedure PMAX_SetDIV_Ch1(newval: Byte);
+
+function PMAX_GetDIV_Ch2: Byte;
+procedure PMAX_SetDIV_Ch2(newval: Byte);
+
+function PMAX_GetDIV_Ch3: Byte;
+procedure PMAX_SetDIV_Ch3(newval: Byte);
+
+function PMAX_GetGTIA_Ch0: Boolean;
+procedure PMAX_SetGTIA_Ch0(newval: Boolean);
+
+function PMAX_GetGTIA_Ch1: Boolean;
+procedure PMAX_SetGTIA_Ch1(newval: Boolean);
+
+function PMAX_GetGTIA_Ch2: Boolean;
+procedure PMAX_SetGTIA_Ch2(newval: Boolean);
+
+function PMAX_GetGTIA_Ch3: Boolean;
+procedure PMAX_SetGTIA_Ch3(newval: Boolean);
 
 function PMAX_GetPSG_Freq: Byte;
 procedure PMAX_SetPSG_Freq(newval: Byte);
@@ -144,7 +190,7 @@ function PMAX_GetMODE_PHI: Byte;
 begin
     case (config[CONFIG_MODE] and CONFIG_MODE_PHI) of
         0: pmax_config.mode_phi:= 1;
-        4: pmax_config.mode_phi:= 2;
+        32: pmax_config.mode_phi:= 2;
     end;
     Result:= pmax_config.mode_phi;
 end;
@@ -154,7 +200,7 @@ begin
     pmax_config.mode_phi:=newval;
     case pmax_config.mode_phi of
         1: config[CONFIG_MODE]:=(config[CONFIG_MODE] and not CONFIG_MODE_PHI) or 0;
-        2: config[CONFIG_MODE]:=(config[CONFIG_MODE] and not CONFIG_MODE_PHI) or 4;
+        2: config[CONFIG_MODE]:=(config[CONFIG_MODE] and not CONFIG_MODE_PHI) or 32;
     end;
 end;
 
@@ -230,6 +276,241 @@ begin
     end;
 end;
 
+function PMAX_GetDIV_Ch0: Byte;
+begin
+    case (config[CONFIG_DIV] and CONFIG_DIV_CH0) of
+        0: pmax_config.core_div1:= 1;
+        1: pmax_config.core_div1:= 2;
+        2: pmax_config.core_div1:= 3;
+        3: pmax_config.core_div1:= 4;
+    end;
+    Result:= pmax_config.core_div1;
+end;
+
+procedure PMAX_SetDIV_Ch0(newval: Byte);
+begin
+    pmax_config.core_div1:=newval;
+    case pmax_config.core_div1 of
+        1: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH0) or 0;
+        2: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH0) or 1;
+        3: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH0) or 2;
+        4: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH0) or 3;
+    end;
+end;
+
+function PMAX_GetDIV_Ch1: Byte;
+begin
+    case (config[CONFIG_DIV] and CONFIG_DIV_CH1) of
+        0: pmax_config.core_div2:= 1;
+        4: pmax_config.core_div2:= 2;
+        8: pmax_config.core_div2:= 3;
+        12: pmax_config.core_div2:= 4;
+    end;
+    Result:= pmax_config.core_div2;
+end;
+
+procedure PMAX_SetDIV_Ch1(newval: Byte);
+begin
+    pmax_config.core_div2:=newval;
+    case pmax_config.core_div2 of
+        1: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH1) or 0;
+        2: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH1) or 4;
+        3: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH1) or 8;
+        4: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH1) or 12;
+    end;
+end;
+
+function PMAX_GetDIV_Ch2: Byte;
+begin
+    case (config[CONFIG_DIV] and CONFIG_DIV_CH2) of
+        0: pmax_config.core_div3:= 1;
+        16: pmax_config.core_div3:= 2;
+        32: pmax_config.core_div3:= 3;
+        48: pmax_config.core_div3:= 4;
+    end;
+    Result:= pmax_config.core_div3;
+end;
+
+procedure PMAX_SetDIV_Ch2(newval: Byte);
+begin
+    pmax_config.core_div3:=newval;
+    case pmax_config.core_div3 of
+        1: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH2) or 0;
+        2: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH2) or 16;
+        3: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH2) or 32;
+        4: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH2) or 48;
+    end;
+end;
+
+function PMAX_GetDIV_Ch3: Byte;
+begin
+    case (config[CONFIG_DIV] and CONFIG_DIV_CH3) of
+        0: pmax_config.core_div4:= 1;
+        64: pmax_config.core_div4:= 2;
+        128: pmax_config.core_div4:= 3;
+        192: pmax_config.core_div4:= 4;
+    end;
+    Result:= pmax_config.core_div4;
+end;
+
+procedure PMAX_SetDIV_Ch3(newval: Byte);
+begin
+    pmax_config.core_div4:=newval;
+    case pmax_config.core_div4 of
+        1: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH3) or 0;
+        2: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH3) or 64;
+        3: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH3) or 128;
+        4: config[CONFIG_DIV]:=(config[CONFIG_DIV] and not CONFIG_DIV_CH3) or 192;
+    end;
+end;
+
+
+function PMAX_GetGTIA_Ch0: Boolean;
+begin
+    case (config[CONFIG_GTIA] and CONFIG_GTIA_CH0) of
+        0: pmax_config.core_gtia1:= false;
+        1: pmax_config.core_gtia1:= true;
+    end;
+    Result:= pmax_config.core_gtia1;
+end;
+
+procedure PMAX_SetGTIA_Ch0(newval: Boolean);
+begin
+    pmax_config.core_gtia1:=newval;
+    case pmax_config.core_gtia1 of
+        false: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH0) or 0;
+        true: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH0) or 1;
+    end;
+end;
+
+function PMAX_GetGTIA_Ch1: Boolean;
+begin
+    case (config[CONFIG_GTIA] and CONFIG_GTIA_CH1) of
+        0: pmax_config.core_gtia2:= false;
+        2: pmax_config.core_gtia2:= true;
+    end;
+    Result:= pmax_config.core_gtia2;
+end;
+
+procedure PMAX_SetGTIA_Ch1(newval: Boolean);
+begin
+    pmax_config.core_gtia2:=newval;
+    case pmax_config.core_gtia2 of
+        false: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH1) or 0;
+        true: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH1) or 2;
+    end;
+end;
+
+function PMAX_GetGTIA_Ch2: Boolean;
+begin
+    case (config[CONFIG_GTIA] and CONFIG_GTIA_CH2) of
+        0: pmax_config.core_gtia3:= false;
+        4: pmax_config.core_gtia3:= true;
+    end;
+    Result:= pmax_config.core_gtia3;
+end;
+
+procedure PMAX_SetGTIA_Ch2(newval: Boolean);
+begin
+    pmax_config.core_gtia3:=newval;
+    case pmax_config.core_gtia3 of
+        false: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH2) or 0;
+        true: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH2) or 4;
+    end;
+end;
+
+function PMAX_GetGTIA_Ch3: Boolean;
+begin
+    case (config[CONFIG_GTIA] and CONFIG_GTIA_CH3) of
+        0: pmax_config.core_gtia4:= false;
+        8: pmax_config.core_gtia4:= true;
+    end;
+    Result:= pmax_config.core_gtia4;
+end;
+
+procedure PMAX_SetGTIA_Ch3(newval: Boolean);
+begin
+    pmax_config.core_gtia4:=newval;
+    case pmax_config.core_gtia4 of
+        false: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH3) or 0;
+        true: config[CONFIG_GTIA]:=(config[CONFIG_GTIA] and not CONFIG_GTIA_CH3) or 8;
+    end;
+end;
+
+function PMAX_GetREST_Pokey: Byte;
+begin
+    case (config[CONFIG_RESTRICT] and CONFIG_RESTRICT_POKEY) of
+        0: pmax_config.mode_pokey:= 1;
+        1: pmax_config.mode_pokey:= 2;
+        10: pmax_config.mode_pokey:= 3;
+    end;
+    Result:= pmax_config.mode_pokey;
+end;
+
+procedure PMAX_SetREST_Pokey(newval: Byte);
+begin
+    pmax_config.mode_pokey:=newval;
+    case pmax_config.mode_pokey of
+        1: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_POKEY) or 0;
+        2: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_POKEY) or 1;
+        3: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_POKEY) or 10;
+    end;
+end;
+
+function PMAX_GetREST_Sid: Boolean;
+begin
+    case (config[CONFIG_RESTRICT] and CONFIG_RESTRICT_POKEY) of
+        0: pmax_config.mode_sid:= false;
+        4: pmax_config.mode_sid:= true;
+    end;
+    Result:= pmax_config.mode_sid;
+end;
+
+procedure PMAX_SetREST_Sid(newval: Boolean);
+begin
+    pmax_config.mode_sid:=newval;
+    case pmax_config.mode_sid of
+        false: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_SID) or 0;
+        true: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_SID) or 4;
+    end;
+end;
+
+
+function PMAX_GetREST_Psg: Boolean;
+begin
+    case (config[CONFIG_RESTRICT] and CONFIG_RESTRICT_PSG) of
+        0: pmax_config.mode_psg:= false;
+        8: pmax_config.mode_psg:= true;
+    end;
+    Result:= pmax_config.mode_psg;
+end;
+
+procedure PMAX_SetREST_Psg(newval: Boolean);
+begin
+    pmax_config.mode_psg:=newval;
+    case pmax_config.mode_psg of
+        false: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_PSG) or 0;
+        true: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_PSG) or 8;
+    end;
+end;
+
+function PMAX_GetREST_Covox: Boolean;
+begin
+    case (config[CONFIG_RESTRICT] and CONFIG_RESTRICT_COVOX) of
+        0: pmax_config.mode_covox:= false;
+        8: pmax_config.mode_covox:= true;
+    end;
+    Result:= pmax_config.mode_covox;
+end;
+
+procedure PMAX_SetREST_Covox(newval: Boolean);
+begin
+    pmax_config.mode_covox:=newval;
+    case pmax_config.mode_covox of
+        false: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_COVOX) or 0;
+        true: config[CONFIG_RESTRICT]:=(config[CONFIG_RESTRICT] and not CONFIG_RESTRICT_COVOX) or 8;
+    end;
+end;
 
 function PMAX_GetPSG_Freq: Byte;
 begin
@@ -377,6 +658,18 @@ begin
     PMAX_GetMODE_IRQ;
     PMAX_GetMODE_Mono;
     PMAX_GetMODE_Mixing;
+    PMAX_GetREST_Pokey;
+    PMAX_GetREST_Sid;
+    PMAX_GetREST_Psg;
+    PMAX_GetREST_Covox;
+    PMAX_GetDIV_Ch0;
+    PMAX_GetDIV_Ch1;
+    PMAX_GetDIV_Ch2;
+    PMAX_GetDIV_Ch3;
+    PMAX_GetGTIA_Ch0;
+    PMAX_GetGTIA_Ch1;
+    PMAX_GetGTIA_Ch2;
+    PMAX_GetGTIA_Ch3;
     PMAX_GetPSG_Freq;
     PMAX_GetPSG_Stereo;
     PMAX_GetPSG_Envelope;
