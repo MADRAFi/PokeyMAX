@@ -18,7 +18,7 @@ const
 
     // Address references
     CONFIG_WRITE = $c;
-    CONFIG_PRESENCE = $1;
+    CONFIG_CAPABILITY = $1;
     CONFIG_VERSION = $4;
 
 
@@ -112,42 +112,42 @@ end;
 
 function PMAX_isFlashPresent: Boolean;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_FLASH = CONFIG_PRESENT_FLASH then
+    if (config[CONFIG_CAPABILITY]) and CONFIG_PRESENT_FLASH = CONFIG_PRESENT_FLASH then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isSIDPresent: Boolean;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_SID = CONFIG_PRESENT_SID then
+    if (config[CONFIG_CAPABILITY]) and CONFIG_PRESENT_SID = CONFIG_PRESENT_SID then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isPSGPresent: Boolean;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_PSG = CONFIG_PRESENT_PSG then
+    if (config[CONFIG_CAPABILITY]) and CONFIG_PRESENT_PSG = CONFIG_PRESENT_PSG then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isCovoxPresent: Boolean;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_COVOX = CONFIG_PRESENT_COVOX then
+    if (config[CONFIG_CAPABILITY]) and CONFIG_PRESENT_COVOX = CONFIG_PRESENT_COVOX then
         result:= true
     else result:= false;
 end;
 
 function PMAX_isSamplePresent: Boolean;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_SAMPLE = CONFIG_PRESENT_SAMPLE then
+    if (config[CONFIG_CAPABILITY]) and CONFIG_PRESENT_SAMPLE = CONFIG_PRESENT_SAMPLE then
         result:= true
     else result:= false;
 end;
 
 function PMAX_GetPokeys: Byte;
 begin
-    case (config[CONFIG_PRESENCE] and CONFIG_PRESENT_POKEY) of
+    case (config[CONFIG_CAPABILITY] and CONFIG_PRESENT_POKEY) of
         1: Result:= 2;
         2: Result:= 4;
         3: Result:= 4;
