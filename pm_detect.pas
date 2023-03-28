@@ -21,6 +21,7 @@ const
     CONFIG_PRESENCE = $1;
     CONFIG_VERSION = $4;
 
+
     // Masks
     CONFIG_PRESENT_FLASH = $40;
     CONFIG_PRESENT_SAMPLE = $20;
@@ -28,7 +29,7 @@ const
     CONFIG_PRESENT_PSG = $8;
     CONFIG_PRESENT_SID = $4;
     CONFIG_PRESENT_POKEY = $3;                      
-    
+
 
 var 
     [volatile] pokey: array [0..0] of byte absolute POKEY_ADDRESS;
@@ -84,7 +85,7 @@ function PMAX_GetPokeys: Byte;
 * It returns number of pokeys present.
 *)
 
-function PMAX_GetCoreVersion: String;
+function PMAX_GetCoreVersion: String[8];
 (*
 * @description:
 * Reads PokeyMAX firmware version. 
@@ -99,7 +100,6 @@ procedure PMAX_EnableConfig(enabled: Boolean);
 * Enabled means config area is selected.
 * Disabled means config area is deselected.
 *)
-
 
 implementation
 
@@ -147,16 +147,15 @@ end;
 
 function PMAX_GetPokeys: Byte;
 begin
-    if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 3 then
-        Result:= 4
-    else if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 2 then
-        Result:= 4
-    else if (config[CONFIG_PRESENCE]) and CONFIG_PRESENT_POKEY = 1 then
-        Result:= 2
-    else Result:=1;
+    case (config[CONFIG_PRESENCE] and CONFIG_PRESENT_POKEY) of
+        1: Result:= 2;
+        2: Result:= 4;
+        3: Result:= 4;
+        else Result:= 1;
+    end;
 end;
 
-function PMAX_GetCoreVersion: String;
+function PMAX_GetCoreVersion: String[8];
 var
     i: Byte;
 
@@ -178,6 +177,5 @@ begin
     else pokey[CONFIG_WRITE]:= 0;
  
 end;
-
 
 end. 

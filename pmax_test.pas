@@ -31,11 +31,11 @@ begin
             writeln('Covox: ', convert_bool(PMAX_isCovoxPresent));
             writeln('Sample: ', convert_bool(PMAX_isSamplePresent));
             writeln('Flash: ', convert_bool(PMAX_isFlashPresent));
+            writeln('----------');
+            repeat until keypressed;
             PMAX_EnableConfig(false);
         end
         else begin
             writeln(' PokeyMAX not found. ');
         end;
-        repeat until keypressed;
-
 end.
