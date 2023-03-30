@@ -18,9 +18,15 @@ const
 
     // Address references
     CONFIG_WRITE = $c;
+    CONFIG_MODE = $0;
     CONFIG_CAPABILITY = $1;
+    CONFIG_DIV = $2;
+    CONFIG_GTIA = $3;
     CONFIG_VERSION = $4;
-
+    CONFIG_PSGMODE = $5;
+    CONFIG_SIDMODE = $6;
+    CONFIG_RESTRICT = $7;
+    CONFIG_OUTPUT = $9;
 
     // Masks
     CONFIG_PRESENT_FLASH = $40;
