@@ -41,7 +41,7 @@ function PMAX_GetPageSize: Word;
 * Reads Pokey registry and returns size of page.
 *)
 
-procedure PMAX_FlashInit;
+procedure PMAX_FetchFlashAddress;
 (*
 * @description:
 * Reads Pokey registry and sets flash variable.
@@ -100,7 +100,7 @@ begin
     else Result:= 512;
 end;
 
-procedure PMAX_FlashInit;
+procedure PMAX_FetchFlashAddress;
 begin
     // flash1 := (LONGINT(config[5]) SHL 24) OR
     //           (LONGINT(config[3]) SHL 16) OR
@@ -127,13 +127,6 @@ begin
     flash2:= PMAX_ReadFlash(0, 1);
   until (flash2 and $3) = 0;
 end;
-
-// procedure PMAX_FlashSaveConfig;
-// begin
-//     pagesize:= PMAX_GetPageSize;
-//     GetMem(buffer, pagesize * 4);
-
-// end;
 
 function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
 

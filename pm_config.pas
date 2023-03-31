@@ -79,7 +79,7 @@ type
         core_out4: Byte;        // 0 = Disabled         1 = Enabled                                                 Low L
         core_out5: Byte;        // 0 = Disabled         1 = Enabled                                                 SPDIF
         pokey_mixing: Byte;     // 1 = Non-linear       2 = Linear
-        pokey_channel: Byte;    // 1 = On               2 = Off
+        pokey_channel: Byte;    // 1 = Off              2 = On
         pokey_irq: Byte;        // 1 = One              2 = All
         psg_freq: Byte;         // 1 = 2MHz             2 = 1MHz            3 = PHI2
         psg_stereo: Byte;       // 1 = Mono             2 = Polish          3 = Czech               4 = L/R

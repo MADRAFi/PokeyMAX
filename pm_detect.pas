@@ -3,7 +3,7 @@ unit pm_detect;
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
 * @name: PokeyMAX library pm_detect.
-* @version: 0.0.2
+* @version: 0.1.0
 *
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
