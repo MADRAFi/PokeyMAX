@@ -3,7 +3,7 @@ unit pm_flash;
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
 * @name: PokeyMAX library pm_flash.
-* @version: 0.1.0
+* @version: 0.2.0
 *
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
@@ -95,21 +95,13 @@ implementation
 
 function PMAX_GetPageSize: Word;
 begin
-    config[CONFIG_VERSION]:=5;
-    if config[CONFIG_VERSION] = 6 then Result:= 1024
+    core_version:= 5;
+    if char(core_version) = '6' then Result:= 1024
     else Result:= 512;
 end;
 
 procedure PMAX_FetchFlashAddress;
 begin
-    // flash1 := (LONGINT(config[5]) SHL 24) OR
-    //           (LONGINT(config[3]) SHL 16) OR
-    //           (LONGINT(config[2]) SHL 8) OR
-    //           LONGINT(config[0]);
-    
-    // flash2 := (LONGINT(config[9]) SHL 24) OR
-    //           (LONGINT(config[7]) SHL 8) OR
-    //           LONGINT(config[6]);
 
     flash1 := (LONGINT(config[CONFIG_PSGMODE]) SHL 24) OR
               (LONGINT(config[CONFIG_GTIA]) SHL 16) OR
@@ -141,14 +133,14 @@ begin
 
   config[CONFIG_FLASHOP] := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
 
-  flash2 := config[CONFIG_FLASHDAT];
+  Result := config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 2;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
+  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 1;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
+  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 0;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
-  Result := flash2;
+  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
+  // Result := flash2;
 end;
 
 procedure PMAX_WriteFlash(addr: LongWord; cfgarea: Byte; data: LongWord);
@@ -201,5 +193,6 @@ begin
   PMAX_WriteFlash(1, 1, flash1);
   PMAX_Wait;
 end;
+
 
 end.
