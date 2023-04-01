@@ -3,7 +3,7 @@ unit pm_flash;
 * @type: unit
 * @author: MADRAFi <madrafi@gmail.com>
 * @name: PokeyMAX library pm_flash.
-* @version: 0.2.0
+* @version: 0.3.0
 *
 * @description:
 * Set of useful constants, and structures to work with ATARI PokeyMAX. 
@@ -31,15 +31,16 @@ const
 
 var 
     flash1, flash2: LongWord;
-    // pagesize: Word;
+
+    [volatile] flash_op: Byte absolute CONFIG_ADDRESS + CONFIG_FLASHOP;
+    [volatile] flash_adl: Byte absolute CONFIG_ADDRESS + CONFIG_FLASHADL;
+    [volatile] flash_adh: Byte absolute CONFIG_ADDRESS + CONFIG_FLASHADH;
+    [volatile] flash_dat: Byte absolute CONFIG_ADDRESS + CONFIG_FLASHDAT;
+    
     // buffer: PWord;
     al: Byte;
+    res: LongWord;
 
-function PMAX_GetPageSize: Word;
-(*
-* @description:
-* Reads Pokey registry and returns size of page.
-*)
 
 procedure PMAX_FetchFlashAddress;
 (*
@@ -93,13 +94,6 @@ procedure PMAX_EraseSector(sector: Byte);
 
 implementation
 
-function PMAX_GetPageSize: Word;
-begin
-    core_version:= 5;
-    if char(core_version) = '6' then Result:= 1024
-    else Result:= 512;
-end;
-
 procedure PMAX_FetchFlashAddress;
 begin
 
@@ -121,26 +115,23 @@ begin
 end;
 
 function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
-
-  // reused flash1 variable for calculation
-
 begin
   addr := addr SHL 2;
 
   al := addr and $ff;
-  config[CONFIG_FLASHADL] := al or 3;
-  config[CONFIG_FLASHADH] := (addr shr 8) and $ff;
+  flash_adl := al or 3;
+  flash_adh := (addr shr 8) and $ff;
 
-  config[CONFIG_FLASHOP] := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
+  flash_op := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
 
-  Result := config[CONFIG_FLASHDAT];
-  config[CONFIG_FLASHADL] := al or 2;
-  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
-  config[CONFIG_FLASHADL] := al or 1;
-  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
-  config[CONFIG_FLASHADL] := al or 0;
-  Result := Result SHL 8 or config[CONFIG_FLASHDAT];
-  // Result := flash2;
+  res := flash_dat;
+  flash_adl := al or 2;
+  res := (res SHL 8) or flash_dat;
+  flash_adl := al or 1;
+  res := (res SHL 8) or flash_dat;
+  flash_adl := al or 0;
+  res := (res SHL 8) or flash_dat;
+  Result:= res;
 end;
 
 procedure PMAX_WriteFlash(addr: LongWord; cfgarea: Byte; data: LongWord);
@@ -148,21 +139,21 @@ begin
   addr := addr SHL 2;
 
   al := addr and $ff;
-  config[CONFIG_FLASHADL] := al or 0;
-  config[CONFIG_FLASHADH] := (addr shr 8) and $ff;
+  flash_adl := al or 0;
+  flash_adh := (addr shr 8) and $ff;
 
-  config[CONFIG_FLASHDAT] := data and $FF;
-  config[CONFIG_FLASHADL] := al or 1;
+  flash_dat:= data and $FF;
+  flash_adl:= al or 1;
   data := data shr 8;
-  config[CONFIG_FLASHDAT] := data and $FF;
-  config[CONFIG_FLASHADL] := al or 2;
+  flash_dat := data and $FF;
+  flash_adl:= al or 2;
   data := data shr 8;
-  config[CONFIG_FLASHDAT] := data and $FF;
-  config[CONFIG_FLASHADL] := al or 3;
+  flash_dat:= data and $FF;
+  flash_adl := al or 3;
   data := data shr 8;
-  config[CONFIG_FLASHDAT] := data;
+  flash_dat := data;
 
-  config[CONFIG_FLASHOP] := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
+  flash_op:= (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
 end;
 
 procedure PMAX_WriteProtect(mode: Boolean);
