@@ -402,18 +402,22 @@ procedure PMAX_ReadFlashType;
 begin
     core_version := 5;
     case char(core_version) of
-        '8':  begin   // flash M04
-                pmax_config.pagesize:= 512;
-                pmax_config.max_address:= $e600;
-            end;
-        '6':  begin   // flash M16
-                pmax_config.pagesize:= 1024;
-                pmax_config.max_address:= $19800;
-            end;
-        '4':  begin   // flash M04
-                pmax_config.pagesize:= 512;
-                pmax_config.max_address:= $d600;
-            end;
+        '8':    begin   // flash M04
+                    pmax_config.pagesize:= 512;
+                    pmax_config.max_address:= $e600;
+                end;
+        '6':    begin   // flash M16
+                    pmax_config.pagesize:= 1024;
+                    pmax_config.max_address:= $19800;
+                end;
+        '4':    begin   // flash M04
+                    pmax_config.pagesize:= 512;
+                    pmax_config.max_address:= $d600;
+                end;
+        // else begin
+        //         pmax_config.pagesize:= 512;
+        //         pmax_config.max_address:= $e600;
+        // end;
     end;
 end;
 

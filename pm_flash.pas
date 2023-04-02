@@ -38,7 +38,7 @@ var
     [volatile] flash_dat: Byte absolute CONFIG_ADDRESS + CONFIG_FLASHDAT;
     
     // buffer: PWord;
-    al: Byte;
+    al: Word;
     res: LongWord;
 
 
@@ -54,7 +54,7 @@ procedure PMAX_Wait;
 * Reads flash and waits until status is 0. This procedure is called after Write to flash.
 *)
 
-function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
+function PMAX_ReadFlash(addr: Word; cfgarea: Byte): LongWord;
 (*
 * @description:
 * Reads flash and returns content.
@@ -62,7 +62,7 @@ function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
 * cfgarea 
 *)
 
-procedure PMAX_WriteFlash(addr: LongWord; cfgarea: Byte; data: LongWord);
+procedure PMAX_WriteFlash(addr: Word; cfgarea: Byte; data: LongWord);
 (*
 * @description:
 * Write provided data to flash.
@@ -79,12 +79,14 @@ procedure PMAX_WriteProtect(mode: Boolean);
 * FALSE     writable
 *)
 
-procedure PMAX_ErasePage(addr: LongWord);
+// procedure PMAX_ErasePage(addr: LongWord);
+procedure PMAX_ErasePage;
 (*
 * @description:
 * Erase page in flash under provided address.
 * addr Address to write to
 *)
+
 procedure PMAX_EraseSector(sector: Byte);
 (*
 * @description:
@@ -110,78 +112,90 @@ end;
 procedure PMAX_Wait;
 begin
   repeat
-    flash2:= PMAX_ReadFlash(0, 1);
-  until (flash2 and $3) = 0;
+    res:= PMAX_ReadFlash(0, 1);
+  until (res and $3) = 0;
 end;
 
-function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
+function PMAX_ReadFlash(addr: Word; cfgarea: Byte): LongWord;
 begin
   addr := addr SHL 2;
 
   al := addr and $ff;
   flash_adl := al or 3;
-  flash_adh := (addr shr 8) and $ff;
+  flash_adh := (addr SHR 8) and $ff;
 
-  flash_op := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
+  flash_op := (((addr SHR 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
 
   res := flash_dat;
   flash_adl := al or 2;
-  res := (res SHL 8) or flash_dat;
+  res:= res SHL 8;
+  res:= res or flash_dat;
   flash_adl := al or 1;
-  res := (res SHL 8) or flash_dat;
+  res:= res SHL 8;
+  res:= res or flash_dat;
   flash_adl := al or 0;
-  res := (res SHL 8) or flash_dat;
+  res:= res or flash_dat;
   Result:= res;
 end;
 
-procedure PMAX_WriteFlash(addr: LongWord; cfgarea: Byte; data: LongWord);
+procedure PMAX_WriteFlash(addr: Word; cfgarea: Byte; data: LongWord);
 begin
   addr := addr SHL 2;
 
   al := addr and $ff;
   flash_adl := al or 0;
-  flash_adh := (addr shr 8) and $ff;
+  flash_adh := (addr SHR 8) and $ff;
 
   flash_dat:= data and $FF;
   flash_adl:= al or 1;
-  data := data shr 8;
+  data := data SHR 8;
   flash_dat := data and $FF;
   flash_adl:= al or 2;
-  data := data shr 8;
+  data := data SHR 8;
   flash_dat:= data and $FF;
   flash_adl := al or 3;
-  data := data shr 8;
+  data := data SHR 8;
   flash_dat := data;
 
-  flash_op:= (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
+  flash_op:= (((addr SHR 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
 end;
 
 procedure PMAX_WriteProtect(mode: Boolean);
 begin
-    flash1:= PMAX_ReadFlash(1, 1);
-    flash1:= flash1 or FLASH_SECTORMASK or FLASH_PAGEMASK;
-    if mode then flash1:= flash1 or FLASH_WRITEPROTECTMASK
-    else flash1:=flash1 and (not FLASH_WRITEPROTECTMASK);
-    PMAX_WriteFlash(1, 1, flash1);
+    res:= PMAX_ReadFlash(1, 1);
+    res:= res or FLASH_SECTORMASK or FLASH_PAGEMASK;
+    if mode then res:= res or FLASH_WRITEPROTECTMASK
+    else res:=res and (not FLASH_WRITEPROTECTMASK);
+    PMAX_WriteFlash(1, 1, res);
 end;
 
-procedure PMAX_ErasePage(addr: LongWord);
+// procedure PMAX_ErasePage(addr: LongWord);
+// begin
+//   res:= PMAX_ReadFlash(1, 1);
+//   res:= res or FLASH_SECTORMASK;
+//   res:= res and (not FLASH_PAGEMASK);
+//   res:= res or addr;
+//   PMAX_WriteFlash(1, 1, res);
+//   PMAX_Wait;
+// end;
+
+procedure PMAX_ErasePage;
 begin
-  flash1:= PMAX_ReadFlash(1, 1);
-  flash1:= flash1 or FLASH_SECTORMASK;
-  flash1:= flash1 and (not FLASH_PAGEMASK);
-  flash1:= flash1 or addr;
-  PMAX_WriteFlash(1, 1, flash1);
+  res:= PMAX_ReadFlash(1, 1);
+  res:= res or FLASH_SECTORMASK;
+  res:= res and (not FLASH_PAGEMASK);
+  res:= res or 0;
+  PMAX_WriteFlash(1, 1, res);
   PMAX_Wait;
 end;
 
 procedure PMAX_EraseSector(sector: Byte);
 begin
-  flash1:= PMAX_ReadFlash(1, 1);
-  flash1:= flash1 or FLASH_PAGEMASK;
-  flash1:= flash1 and (not FLASH_SECTORMASK);
-  flash1:= flash1 or (LongWord(sector) SHL 20);
-  PMAX_WriteFlash(1, 1, flash1);
+  res:= PMAX_ReadFlash(1, 1);
+  res:= res or FLASH_PAGEMASK;
+  res:= res and (not FLASH_SECTORMASK);
+  res:= res or (LongWord(sector) SHL 20);
+  PMAX_WriteFlash(1, 1, res);
   PMAX_Wait;
 end;
 
