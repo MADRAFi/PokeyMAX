@@ -88,7 +88,7 @@ type
         sid_1: Byte;            // 1 = 6581             2 = 8580            3 = 8580 Digi
         sid_2: Byte;            // 1 = 6581             2 = 8580            3 = 8580 Digi
         pagesize: Word;         // 1024                 512
-        max_address: LongWord;     // $d600                $e600               $19800
+        max_address: LongWord;  // $d600                $e600               $19800
     end;
 
 var 
