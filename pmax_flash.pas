@@ -63,7 +63,7 @@ begin
                             pagesize:= 512;
                         end;
             end;
-            GetMem(page_buffer, pagesize);
+            GetMem(page_buffer, pagesize * 4);
             writeln('Backing up page');
             for i := 0 to pagesize - 1  do
             begin
@@ -89,7 +89,7 @@ begin
             PMAX_WriteProtect(True);
             writeln('Write backed up stuff DONE');
             PMAX_EnableConfig(false);
-            FreeMem(page_buffer);
+            FreeMem(page_buffer, pagesize * 4);
         end
         else begin
             writeln(' PokeyMAX not found. ');
