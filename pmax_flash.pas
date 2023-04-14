@@ -12,7 +12,7 @@ var
     version: String = '';
     i: Word;
     // page_buffer: page_array;
-    page_buffer: array[0..0] of LongWord;
+    page_buffer: array[0..1023] of LongWord;
     pagesize: Word;
 
 function convert_bool(value: Boolean): String;
@@ -62,8 +62,10 @@ begin
                 '4':    begin   // flash M04
                             pagesize:= 512;
                         end;
+                else
+                    pagesize:=512;
             end;
-            GetMem(page_buffer, pagesize * 4);
+            // GetMem(page_buffer, pagesize * 4);
             writeln('Backing up page');
             for i := 0 to pagesize - 1  do
             begin
@@ -89,7 +91,7 @@ begin
             PMAX_WriteProtect(True);
             writeln('Write backed up stuff DONE');
             PMAX_EnableConfig(false);
-            FreeMem(page_buffer, pagesize * 4);
+            // FreeMem(page_buffer, pagesize * 4);
         end
         else begin
             writeln(' PokeyMAX not found. ');

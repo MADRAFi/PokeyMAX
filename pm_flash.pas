@@ -28,6 +28,7 @@ const
 var 
     flash1, flash2: LongWord;
     al: Byte;
+    res: LongWord;
 
 procedure PMAX_FetchFlashAddress;
 (*
@@ -104,30 +105,31 @@ end;
 procedure PMAX_Wait;
 begin
   repeat
-    flash2:= PMAX_ReadFlash(0, 1);
-  until (flash2 and $3) = 0;
+    res:= PMAX_ReadFlash(0, 1);
+  until (res and $3) = 0;
 end;
 
 function PMAX_ReadFlash(addr: LongWord; cfgarea: Byte): LongWord;
-
-// reused flash2 variable for calculation
 begin
   addr := addr SHL 2;
 
   al := addr and $ff;
   config[CONFIG_FLASHADL] := al or 3;
-  config[CONFIG_FLASHADH] := (addr shr 8) and $ff;
+  config[CONFIG_FLASHADH] := (addr SHR 8) and $ff;
 
-  config[CONFIG_FLASHOP] := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
+  config[CONFIG_FLASHOP] := (((addr SHR 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 1;
 
-  flash2 := config[CONFIG_FLASHDAT];
+  res:= config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 2;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
+  res:= res SHL 8;
+  res:= res or config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 1;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
+  res:= res SHL 8;
+  res:= res or config[CONFIG_FLASHDAT];
   config[CONFIG_FLASHADL] := al or 0;
-  flash2 := flash2 SHL 8 or config[CONFIG_FLASHDAT];
-  Result := flash2;
+  res:= res SHL 8;
+  res:= res or config[CONFIG_FLASHDAT];
+  Result := res;
 end;
 
 procedure PMAX_WriteFlash(addr: LongWord; cfgarea: Byte; data: LongWord);
@@ -136,48 +138,48 @@ begin
 
   al := addr and $ff;
   config[CONFIG_FLASHADL] := al or 0;
-  config[CONFIG_FLASHADH] := (addr shr 8) and $ff;
+  config[CONFIG_FLASHADH] := (addr SHR 8) and $ff;
 
   config[CONFIG_FLASHDAT] := data and $FF;
   config[CONFIG_FLASHADL] := al or 1;
-  data := data shr 8;
+  data := data SHR 8;
   config[CONFIG_FLASHDAT] := data and $FF;
   config[CONFIG_FLASHADL] := al or 2;
-  data := data shr 8;
+  data := data SHR 8;
   config[CONFIG_FLASHDAT] := data and $FF;
   config[CONFIG_FLASHADL] := al or 3;
-  data := data shr 8;
+  data := data SHR 8;
   config[CONFIG_FLASHDAT] := data;
 
-  config[CONFIG_FLASHOP] := (((addr shr 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
+  config[CONFIG_FLASHOP] := (((addr SHR 16) and $7) SHL 3) or (cfgarea SHL 2) or 2 or 0;
 end;
 
 procedure PMAX_WriteProtect(mode: Boolean);
 begin
-    flash1:= PMAX_ReadFlash(1, 1);
-    flash1:= flash1 or FLASH_SECTORMASK or FLASH_PAGEMASK;
-    if mode then flash1:= flash1 or FLASH_WRITEPROTECTMASK
-    else flash1:=flash1 and (not FLASH_WRITEPROTECTMASK);
-    PMAX_WriteFlash(1, 1, flash1);
+    res:= PMAX_ReadFlash(1, 1);
+    res:= res or FLASH_SECTORMASK or FLASH_PAGEMASK;
+    if mode then res:= res or FLASH_WRITEPROTECTMASK
+    else res:=res and (not FLASH_WRITEPROTECTMASK);
+    PMAX_WriteFlash(1, 1, res);
 end;
 
 procedure PMAX_ErasePage(addr: LongWord);
 begin
-  flash1:= PMAX_ReadFlash(1, 1);
-  flash1:= flash1 or FLASH_SECTORMASK;
-  flash1:= flash1 and (not FLASH_PAGEMASK);
-  flash1:= flash1 or addr;
-  PMAX_WriteFlash(1, 1, flash1);
+  res:= PMAX_ReadFlash(1, 1);
+  res:= res or FLASH_SECTORMASK;
+  res:= res and (not FLASH_PAGEMASK);
+  res:= res or addr;
+  PMAX_WriteFlash(1, 1, res);
   PMAX_Wait;
 end;
 
 procedure PMAX_EraseSector(sector: Byte);
 begin
-  flash1:= PMAX_ReadFlash(1, 1);
-  flash1:= flash1 or FLASH_PAGEMASK;
-  flash1:= flash1 and (not FLASH_SECTORMASK);
-  flash1:= flash1 or (LongWord(sector) SHL 20);
-  PMAX_WriteFlash(1, 1, flash1);
+  res:= PMAX_ReadFlash(1, 1);
+  res:= res or FLASH_PAGEMASK;
+  res:= res and (not FLASH_SECTORMASK);
+  res:= res or (LongWord(sector) SHL 20);
+  PMAX_WriteFlash(1, 1, res);
   PMAX_Wait;
 end;
 
